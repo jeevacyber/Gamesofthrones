@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 228 30% 6%;
+    --foreground: 210 40% 93%;
+
+    --card: 228 25% 10%;
+    --card-foreground: 210 40% 93%;
+
+    --popover: 228 25% 10%;
+    --popover-foreground: 210 40% 93%;
+
+    --primary: 265 80% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 228 20% 16%;
+    --secondary-foreground: 210 40% 93%;
+
+    --muted: 228 15% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 265 60% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 228 20% 18%;
+    --input: 228 20% 18%;
+    --ring: 265 80% 60%;
+
+    --radius: 0.75rem;
+
+    /* Fire theme */
+    --fire-orange: 25 95% 55%;
+    --fire-red: 0 85% 50%;
+    --fire-gold: 42 95% 55%;
+    --fire-ember: 15 90% 45%;
+
+    /* Ice theme */
+    --ice-blue: 210 80% 60%;
+    --ice-silver: 220 20% 75%;
+    --ice-frost: 200 60% 80%;
+    --ice-steel: 215 25% 40%;
+
+    /* Cyber accents */
+    --cyber-purple: 265 80% 60%;
+    --cyber-blue: 220 90% 60%;
+    --neon-glow: 265 100% 70%;
+
+    /* Gold for admin */
+    --royal-gold: 42 90% 55%;
+    --royal-red: 0 75% 45%;
+
+    --sidebar-background: 228 25% 8%;
+    --sidebar-foreground: 210 40% 93%;
+    --sidebar-primary: 265 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 228 20% 14%;
+    --sidebar-accent-foreground: 210 40% 93%;
+    --sidebar-border: 228 20% 18%;
+    --sidebar-ring: 265 80% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-mono;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .fire-card {
+    @apply rounded-xl border relative overflow-hidden backdrop-blur-md;
+    background: linear-gradient(135deg, hsl(0 85% 50% / 0.15), hsl(25 95% 55% / 0.15), hsl(42 95% 55% / 0.1));
+    border-color: hsl(25 95% 55% / 0.3);
+    box-shadow: 0 0 30px hsl(25 95% 55% / 0.1), inset 0 1px 0 hsl(42 95% 55% / 0.1);
+  }
+
+  .ice-card {
+    @apply rounded-xl border relative overflow-hidden backdrop-blur-md;
+    background: linear-gradient(135deg, hsl(210 80% 60% / 0.15), hsl(220 20% 75% / 0.1), hsl(200 60% 80% / 0.1));
+    border-color: hsl(210 80% 60% / 0.3);
+    box-shadow: 0 0 30px hsl(210 80% 60% / 0.1), inset 0 1px 0 hsl(200 60% 80% / 0.1);
+  }
+
+  .neon-border {
+    @apply border;
+    border-color: hsl(var(--cyber-purple) / 0.5);
+    box-shadow: 0 0 15px hsl(var(--cyber-purple) / 0.2), inset 0 0 15px hsl(var(--cyber-purple) / 0.05);
+  }
+
+  .gradient-text-fire {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(42 95% 55%), hsl(25 95% 55%), hsl(0 85% 50%));
+  }
+
+  .gradient-text-ice {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(200 60% 80%), hsl(210 80% 60%), hsl(220 20% 75%));
+  }
+
+  .gradient-text-cyber {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(265 80% 60%), hsl(220 90% 60%), hsl(265 100% 70%));
+  }
+
+  .gradient-text-silver {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(220 20% 75%), hsl(210 80% 60%), hsl(220 20% 85%));
+  }
+
+  .btn-fire {
+    @apply px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider transition-all duration-300;
+    background: linear-gradient(135deg, hsl(25 95% 55%), hsl(0 85% 50%));
+    color: white;
+    box-shadow: 0 0 20px hsl(25 95% 55% / 0.3);
+  }
+
+  .btn-fire:hover {
+    box-shadow: 0 0 30px hsl(25 95% 55% / 0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-ice {
+    @apply px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider transition-all duration-300;
+    background: linear-gradient(135deg, hsl(210 80% 60%), hsl(220 20% 75%));
+    color: white;
+    box-shadow: 0 0 20px hsl(210 80% 60% / 0.3);
+  }
+
+  .btn-ice:hover {
+    box-shadow: 0 0 30px hsl(210 80% 60% / 0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-cyber {
+    @apply px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider transition-all duration-300;
+    background: linear-gradient(135deg, hsl(265 80% 60%), hsl(220 90% 60%));
+    color: white;
+    box-shadow: 0 0 20px hsl(265 80% 60% / 0.3);
+  }
+
+  .btn-cyber:hover {
+    box-shadow: 0 0 30px hsl(265 80% 60% / 0.5);
+    transform: translateY(-2px);
+  }
+
+  .admin-card {
+    @apply rounded-xl border relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(0 75% 45% / 0.1), hsl(42 90% 55% / 0.1));
+    border-color: hsl(42 90% 55% / 0.3);
+    box-shadow: 0 0 30px hsl(42 90% 55% / 0.1);
+  }
+
+  .gradient-text-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(42 90% 55%), hsl(42 95% 70%), hsl(42 90% 55%));
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(228 30% 6%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(265 80% 60% / 0.3);
+  border-radius: 3px;
+}
