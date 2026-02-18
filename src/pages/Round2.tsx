@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 // Round 2 Challenges
 import { Snowflake, Trophy, History, Star, LogOut, ArrowLeft, Swords, Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -35,6 +35,10 @@ const Round2 = () => {
   const { user, logout } = useAuth();
   const { completeRound2, solvedR2, submitFlag, round2Score, solveHistory, isTeamBanned } = useGame();
   const navigate = useNavigate();
+
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
 
   const r2History = solveHistory.filter(h => h.round === 2);
 

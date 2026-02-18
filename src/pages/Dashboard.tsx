@@ -2,25 +2,60 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Leaderboard from "@/components/Leaderboard";
 import { Trophy, Flag, Clock, User, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useGame } from "@/hooks/useGame";
+import API_URL from "@/config/api";
+import { useEffect, useState } from "react";
 
-const mockSubmissions = [
-  { flag: "The Dragon's Whisper", correct: true, time: "14:32:10" },
-  { flag: "Burning Pages", correct: true, time: "14:45:22" },
-  { flag: "Ember Trail", correct: false, time: "15:01:05" },
-  { flag: "Fire & Smoke", correct: true, time: "15:20:18" },
-];
-
-const mockLeaderboard = [
-  { rank: 1, team: "FireBreathers", score: 2100, lastSolve: "2m ago" },
-  { rank: 2, team: "DragonRiders", score: 1800, lastSolve: "5m ago" },
-  { rank: 3, team: "MyTeam ⭐", score: 1500, lastSolve: "12m ago" },
-  { rank: 4, team: "EmberSquad", score: 1200, lastSolve: "20m ago" },
-  { rank: 5, team: "AshWalkers", score: 900, lastSolve: "30m ago" },
-];
+interface LeaderboardEntry {
+  rank: number;
+  team: string;
+  score: number;
+  lastSolve: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { teamScore, solveHistory, solvedR1, solvedR2 } = useGame();
+  const [globalTeams, setGlobalTeams] = useState<any[]>([]);
+
+  // Redirect if admin
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/teams`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          // Sort for rank calculation
+          const sorted = [...data].sort((a, b) => b.score - a.score);
+          setGlobalTeams(sorted);
+        }
+      } catch (e) {
+        console.error("Failed to fetch teams for ranking", e);
+      }
+    };
+    fetchTeams();
+    const interval = setInterval(fetchTeams, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const rank = globalTeams.findIndex(t => t.teamName === user?.teamName) + 1;
+  const totalFlags = solvedR1.length + solvedR2.length;
+
+  const leaderboardEntries: LeaderboardEntry[] = globalTeams
+    .slice(0, 5)
+    .map((t, i) => ({
+      rank: i + 1,
+      team: t.teamName,
+      score: t.score,
+      lastSolve: t.lastSolve || "N/A"
+    }));
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -50,10 +85,10 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: User, label: "Team", value: "DragonRiders", color: "text-cyber-purple" },
-            { icon: Trophy, label: "Rank", value: "#3", color: "text-fire-gold" },
-            { icon: Flag, label: "Flags", value: "4/10", color: "text-fire-orange" },
-            { icon: Clock, label: "Score", value: "1,500", color: "text-ice-blue" },
+            { icon: User, label: "Team", value: user?.teamName || "Guest", color: "text-cyber-purple" },
+            { icon: Trophy, label: "Rank", value: rank > 0 ? `#${rank}` : "N/A", color: "text-fire-gold" },
+            { icon: Flag, label: "Flags", value: `${totalFlags}`, color: "text-fire-orange" },
+            { icon: Clock, label: "Score", value: teamScore.toLocaleString(), color: "text-ice-blue" },
           ].map((s) => (
             <motion.div
               key={s.label}
@@ -71,25 +106,31 @@ const Dashboard = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Submission History */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-card neon-border overflow-hidden">
-            <div className="p-4 border-b border-border/30">
-              <h3 className="font-cinzel font-bold text-lg text-cyber-purple">Submission History</h3>
+            <div className="p-4 border-b border-border/30 flex justify-between items-center">
+              <h3 className="font-cinzel font-bold text-lg text-cyber-purple">Live Solves</h3>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">History</span>
             </div>
-            <div className="divide-y divide-border/20">
-              {mockSubmissions.map((s, i) => (
-                <div key={i} className="flex items-center px-4 py-3">
-                  <span className={`w-6 text-sm ${s.correct ? "text-green-400" : "text-destructive"}`}>
-                    {s.correct ? "✓" : "✗"}
-                  </span>
-                  <span className="flex-1 text-sm font-mono text-foreground">{s.flag}</span>
-                  <span className="text-xs text-muted-foreground">{s.time}</span>
-                </div>
-              ))}
+            <div className="divide-y divide-border/20 max-h-[400px] overflow-y-auto">
+              {solveHistory.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground italic">No submission history yet.</div>
+              ) : (
+                solveHistory.map((s, i) => (
+                  <div key={i} className="flex items-center px-4 py-3 hover:bg-secondary/10 transition-colors">
+                    <span className="w-6 text-sm text-green-400">✓</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-mono text-foreground">{s.challengeTitle}</p>
+                      <p className="text-[10px] text-muted-foreground">{s.timestamp}</p>
+                    </div>
+                    <span className="text-xs font-bold text-cyber-purple">+{s.points}</span>
+                  </div>
+                ))
+              )}
             </div>
           </motion.div>
 
           {/* Leaderboard */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <Leaderboard entries={mockLeaderboard} theme="cyber" />
+            <Leaderboard entries={leaderboardEntries} theme="cyber" />
           </motion.div>
         </div>
       </div>

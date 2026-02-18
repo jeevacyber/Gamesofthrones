@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { Flame, Trophy, History, LogOut, ArrowLeft, Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import ChallengeCard from "@/components/ChallengeCard";
@@ -24,6 +24,10 @@ const Round1 = () => {
   const { user, logout } = useAuth();
   const { completeRound1, submitFlag, solvedR1, round1Score, solveHistory, isTeamBanned } = useGame();
   const navigate = useNavigate();
+
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
 
   const r1History = solveHistory.filter(h => h.round === 1);
 

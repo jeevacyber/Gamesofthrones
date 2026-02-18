@@ -1,24 +1,73 @@
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Leaderboard from "@/components/Leaderboard";
+import { useEffect, useState } from "react";
+import API_URL from "@/config/api";
 
-const round1Lb = [
-  { rank: 1, team: "FireBreathers", score: 2100, lastSolve: "2m ago" },
-  { rank: 2, team: "DragonRiders", score: 1800, lastSolve: "5m ago" },
-  { rank: 3, team: "BurnUnit", score: 1500, lastSolve: "12m ago" },
-  { rank: 4, team: "EmberSquad", score: 1200, lastSolve: "20m ago" },
-  { rank: 5, team: "AshWalkers", score: 900, lastSolve: "30m ago" },
-];
-
-const round2Lb = [
-  { rank: 1, team: "IceBreakers", score: 2500, lastSolve: "1m ago" },
-  { rank: 2, team: "WinterIsComing", score: 2100, lastSolve: "4m ago" },
-  { rank: 3, team: "NightKings", score: 1800, lastSolve: "8m ago" },
-  { rank: 4, team: "FrostByte", score: 1400, lastSolve: "15m ago" },
-  { rank: 5, team: "WhiteHackers", score: 1100, lastSolve: "25m ago" },
-];
+interface TeamEntry {
+  rank: number;
+  team: string;
+  score: number;
+  lastSolve: string;
+}
 
 const LeaderboardPage = () => {
+  const [round1Teams, setRound1Teams] = useState<TeamEntry[]>([]);
+  const [round2Teams, setRound2Teams] = useState<TeamEntry[]>([]);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/teams`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const r1Titles = ["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"];
+
+          // Process Round 1 Leaderboard
+          const r1Data = data.map(t => {
+            const r1Solves = t.solves.filter((s: any) => r1Titles.includes(s.challengeId));
+            return {
+              team: t.teamName,
+              score: r1Solves.reduce((acc: number, s: any) => acc + s.points, 0),
+              lastSolve: r1Solves.length > 0 ? r1Solves[r1Solves.length - 1].timestamp : "N/A"
+            };
+          }).sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            const lastA = a.lastSolve !== "N/A" ? new Date(a.lastSolve).getTime() : Infinity;
+            const lastB = b.lastSolve !== "N/A" ? new Date(b.lastSolve).getTime() : Infinity;
+            return lastA - lastB;
+          })
+            .map((t, i) => ({ ...t, rank: i + 1 }));
+
+          // Process Round 2 Leaderboard
+          const r2Data = data.map(t => {
+            const r2Solves = t.solves.filter((s: any) => !r1Titles.includes(s.challengeId));
+            return {
+              team: t.teamName,
+              score: r2Solves.reduce((acc: number, s: any) => acc + s.points, 0),
+              lastSolve: r2Solves.length > 0 ? r2Solves[r2Solves.length - 1].timestamp : "N/A"
+            };
+          }).sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            const lastA = a.lastSolve !== "N/A" ? new Date(a.lastSolve).getTime() : Infinity;
+            const lastB = b.lastSolve !== "N/A" ? new Date(b.lastSolve).getTime() : Infinity;
+            return lastA - lastB;
+          })
+            .map((t, i) => ({ ...t, rank: i + 1 }));
+
+          setRound1Teams(r1Data.slice(0, 5));
+          setRound2Teams(r2Data.slice(0, 5));
+        }
+      } catch (e) {
+        console.error("Failed to fetch leaderboard data", e);
+      }
+    };
+
+    fetchLeaderboard();
+    const interval = setInterval(fetchLeaderboard, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background relative">
       <Navbar />
@@ -36,11 +85,11 @@ const LeaderboardPage = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 className="font-cinzel text-lg font-bold gradient-text-fire mb-4 text-center">🐉 Round 1 — Fire Kingdom</h3>
-            <Leaderboard entries={round1Lb} theme="fire" />
+            <Leaderboard entries={round1Teams} theme="fire" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <h3 className="font-cinzel text-lg font-bold gradient-text-ice mb-4 text-center">⚔ Round 2 — Ice Kingdom</h3>
-            <Leaderboard entries={round2Lb} theme="ice" />
+            <Leaderboard entries={round2Teams} theme="ice" />
           </motion.div>
         </div>
       </div>

@@ -25,6 +25,7 @@ const AdminDashboard = () => {
   } = useGame();
   const navigate = useNavigate();
   const [dbTeams, setDbTeams] = useState<TeamData[]>([]);
+  const [historySearch, setHistorySearch] = useState("");
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -66,10 +67,25 @@ const AdminDashboard = () => {
       timestamp: s.timestamp || "N/A", // Already formatted string from DB
       round: (["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"].includes(s.challengeId) ? 1 : 2) as 1 | 2
     }))
-  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ).sort((a, b) => new Date(b.timestamp).getTime() - b.timestamp.localeCompare(a.timestamp))
+    .filter(h =>
+      h.teamName.toLowerCase().includes(historySearch.toLowerCase()) ||
+      h.challengeTitle.toLowerCase().includes(historySearch.toLowerCase())
+    );
 
-  // Filter banned
-  const teams = dbTeams.filter(t => !bannedTeams.includes(t.teamName));
+  // Filter banned and Sort by Rank (Score desc, then Time asc)
+  const teams = dbTeams
+    .filter(t => !bannedTeams.includes(t.teamName))
+    .sort((a, b) => {
+      // Primary sort: Score (Descending)
+      if (b.score !== a.score) return b.score - a.score;
+
+      // Secondary sort: Last Solve Time (Ascending - earliest first)
+      // We parse the stored timestamp string. Note: new Date() handles the "Feb 18, 2026, 2:30:15 PM" format.
+      const lastA = a.solves && a.solves.length > 0 ? new Date(a.solves[a.solves.length - 1].timestamp).getTime() : Infinity;
+      const lastB = b.solves && b.solves.length > 0 ? new Date(b.solves[b.solves.length - 1].timestamp).getTime() : Infinity;
+      return lastA - lastB;
+    });
 
   const handleBanTeam = (teamName: string) => {
     if (confirm(`Are you sure you want to ban/delete team "${teamName}"? Their progress will be hidden.`)) {
@@ -98,30 +114,57 @@ const AdminDashboard = () => {
   const handleExportCSV = () => {
     // 1. Define headers
     const headers = [
+      "Rank",
       "Team Name",
       "College Name",
-      "Email",
+      "Total Score",
       "R1 Score",
       "R2 Score",
-      "Total Score",
+      "Total Solves",
       "R1 Solves",
       "R2 Solves",
-      "Total Solves"
+      "Last Solve Time",
+      "Email",
+      "Full Solve History (Challenge: Time)"
     ];
 
-    // 2. Map data
-    const rows = teams.map(t => {
+    // 2. Sort and Map data
+    const sortedTeams = [...teams].sort((a, b) => {
+      // Primary sort: Score (Descending)
+      if (b.score !== a.score) return b.score - a.score;
+
+      // Secondary sort: Last Solve Time (Ascending - earliest first)
+      const lastA = a.solves && a.solves.length > 0 ? new Date(a.solves[a.solves.length - 1].timestamp).getTime() : Infinity;
+      const lastB = b.solves && b.solves.length > 0 ? new Date(b.solves[b.solves.length - 1].timestamp).getTime() : Infinity;
+      return lastA - lastB;
+    });
+
+    const rows = sortedTeams.map((t, index) => {
       const stats = getRoundStats(t.solves);
+
+      // Get last solve time
+      const lastSolve = t.solves && t.solves.length > 0
+        ? t.solves[t.solves.length - 1].timestamp
+        : "N/A";
+
+      // Format full history as a single string
+      const historyStr = (t.solves || [])
+        .map(s => `${s.challengeId} (${s.points}pts) @ ${s.timestamp}`)
+        .join(" | ");
+
       return [
-        `"${t.teamName}"`, // Quote strings to handle commas
-        `"${t.collegeName}"`,
-        `"${t.email}"`,
+        index + 1, // Rank
+        `"${t.teamName.replace(/"/g, '""')}"`,
+        `"${t.collegeName.replace(/"/g, '""')}"`,
+        t.score,
         stats.r1Score,
         stats.r2Score,
-        t.score,
+        t.solves ? t.solves.length : 0,
         stats.r1Count,
         stats.r2Count,
-        t.solves ? t.solves.length : 0
+        `"${lastSolve}"`,
+        `"${t.email}"`,
+        `"${historyStr.replace(/"/g, '""')}"`
       ].join(",");
     });
 
@@ -133,7 +176,7 @@ const AdminDashboard = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `ctf_teams_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `ctf_comprehensive_export_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -232,11 +275,10 @@ const AdminDashboard = () => {
                 <tr className="border-b border-border/20 text-xs text-muted-foreground uppercase tracking-wider">
                   <th className="text-left p-3">Team</th>
                   <th className="text-left p-3">College</th>
-                  <th className="text-center p-3">R1 Solves</th>
                   <th className="text-center p-3">R1 Score</th>
-                  <th className="text-center p-3">R2 Solves</th>
                   <th className="text-center p-3">R2 Score</th>
                   <th className="text-center p-3">Total Score</th>
+                  <th className="text-center p-3">Last Solve</th>
                   <th className="text-center p-3">Re-Open</th>
                   <th className="text-center p-3">Actions</th>
                 </tr>
@@ -255,11 +297,12 @@ const AdminDashboard = () => {
                           {(t.round2Completed) && <span className="ml-2 text-[10px] bg-ice-blue text-black px-1 rounded font-bold">R2 DONE</span>}
                         </td>
                         <td className="p-3 text-sm text-muted-foreground">{t.collegeName}</td>
-                        <td className="p-3 text-sm text-center text-fire-orange">{stats.r1Count}</td>
-                        <td className="p-3 text-sm text-center text-fire-gold font-bold">{stats.r1Score}</td>
-                        <td className="p-3 text-sm text-center text-ice-blue">{stats.r2Count}</td>
-                        <td className="p-3 text-sm text-center text-ice-frost font-bold">{stats.r2Score}</td>
+                        <td className="p-3 text-sm text-center text-fire-gold font-bold">{stats.r1Score} ({stats.r1Count})</td>
+                        <td className="p-3 text-sm text-center text-ice-frost font-bold">{stats.r2Score} ({stats.r2Count})</td>
                         <td className="p-3 text-sm text-center text-royal-gold font-bold">{t.score}</td>
+                        <td className="p-3 text-xs text-center text-muted-foreground font-mono">
+                          {t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp.split(',')[1] : "Never"}
+                        </td>
                         <td className="p-3 text-center">
                           <div className="flex justify-center gap-2">
                             <button
@@ -298,8 +341,17 @@ const AdminDashboard = () => {
 
         {/* Solve History Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="admin-card overflow-hidden mt-8">
-          <div className="p-4 border-b border-royal-gold/20 flex items-center justify-between">
+          <div className="p-4 border-b border-royal-gold/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h3 className="font-cinzel font-bold text-lg gradient-text-ice">Live Solve History (Global)</h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search team or challenge..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="bg-secondary/30 border border-royal-gold/20 rounded-lg px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:border-royal-gold/50 transition-colors font-mono"
+              />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">

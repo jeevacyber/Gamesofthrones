@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 // Rounds page showing available challenges
 import Navbar from "@/components/Navbar";
 import { Shield, Sword, Lock, ArrowLeft } from "lucide-react";
@@ -7,13 +7,17 @@ import { Shield, Sword, Lock, ArrowLeft } from "lucide-react";
 import { useGame } from "@/hooks/useGame";
 import { useToast } from "@/hooks/use-toast";
 
-import { useAuth } from "@/hooks/useAuth"; // Added import
+import { useAuth } from "@/hooks/useAuth";
 
 const Rounds = () => {
     const navigate = useNavigate();
-    const { round1Locked, round2Locked, round1Completed, round2Completed, isTeamBanned } = useGame(); // Added isTeamBanned
+    const { round1Locked, round2Locked, round1Completed, round2Completed, isTeamBanned } = useGame();
     const { toast } = useToast();
-    const { user } = useAuth(); // Added useAuth
+    const { user } = useAuth();
+
+    if (user?.role === "admin") {
+        return <Navigate to="/admin" replace />;
+    }
 
     const handleRoundClick = (round: string, isLocked: boolean, isCompleted: boolean) => {
         if (user?.teamName && isTeamBanned(user.teamName)) {

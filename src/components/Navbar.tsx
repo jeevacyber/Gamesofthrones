@@ -37,8 +37,8 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-6">
             {user ? (
               <>
-                <span className="text-sm text-muted-foreground">
-                  {user.role === "admin" ? "Admin" : user.teamName || user.email}
+                <span className="text-sm text-cyan-400 font-mono">
+                  {user.role === "admin" ? "🛡️ Admin" : `🚩 ${user.teamName || user.email}`}
                 </span>
                 <button
                   onClick={handleLogout}

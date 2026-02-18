@@ -25,21 +25,27 @@ const MOCK_ADMIN = {
   email: "admin@ctf.com",
   password: "admin",
   role: "admin" as const,
-  id: "admin-123",
-  teamName: "Admin Team"
+  id: "admin-123"
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<MockUser | null>(() => {
+  const [user, setUser] = useState<MockUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Hydrate user from sessionStorage on mount
     try {
-      const storedUser = localStorage.getItem("mock_user");
-      return storedUser ? JSON.parse(storedUser) : null;
+      const storedUser = sessionStorage.getItem("mock_user");
+      if (storedUser && storedUser !== "undefined") {
+        setUser(JSON.parse(storedUser));
+      }
     } catch (error) {
       console.error("Failed to parse stored user", error);
-      return null;
+      sessionStorage.removeItem("mock_user");
+    } finally {
+      setIsLoading(false);
     }
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -48,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (email === MOCK_ADMIN.email && password === MOCK_ADMIN.password) {
       const u = { ...MOCK_ADMIN };
       setUser(u);
-      localStorage.setItem("mock_user", JSON.stringify(u));
+      sessionStorage.setItem("mock_user", JSON.stringify(u));
       setIsLoading(false);
       return { user: u, error: null };
     }
@@ -64,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setUser(data.user);
-        localStorage.setItem("mock_user", JSON.stringify(data.user));
+        sessionStorage.setItem("mock_user", JSON.stringify(data.user));
         return { user: data.user, error: null };
       } else {
         return { user: null, error: data.error };
@@ -88,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setUser(data.user);
-        localStorage.setItem("mock_user", JSON.stringify(data.user));
+        sessionStorage.setItem("mock_user", JSON.stringify(data.user));
         return { user: data.user, error: null };
       } else {
         return { user: null, error: data.error };
@@ -102,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("mock_user");
+    sessionStorage.removeItem("mock_user");
   };
 
   return (

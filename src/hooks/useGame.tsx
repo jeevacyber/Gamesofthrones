@@ -59,8 +59,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         // Load initial state from localStorage
         const r1 = localStorage.getItem("round1Locked");
         const r2 = localStorage.getItem("round2Locked");
-        const r1c = localStorage.getItem("round1Completed");
-        const r2c = localStorage.getItem("round2Completed");
+        const r1c = sessionStorage.getItem("round1Completed");
+        const r2c = sessionStorage.getItem("round2Completed");
         const banned = localStorage.getItem("bannedTeams");
 
         if (r1 && r1 !== "undefined") {
@@ -97,7 +97,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                     // Ignore fetch error, rely on local state
                 }
 
-                const userJson = localStorage.getItem("mock_user");
+                const userJson = sessionStorage.getItem("mock_user");
                 if (!userJson || userJson === "undefined") return;
 
                 const user = JSON.parse(userJson);
@@ -131,12 +131,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                         })).reverse();
                         setSolveHistory(history);
 
-                        // Sync to localStorage
-                        localStorage.setItem("solvedR1", JSON.stringify(r1Solves.map((s: any) => s.challengeId)));
-                        localStorage.setItem("solvedR2", JSON.stringify(r2Solves.map((s: any) => s.challengeId)));
-                        localStorage.setItem("round1Score", r1Score.toString());
-                        localStorage.setItem("round2Score", r2Score.toString());
-                        localStorage.setItem("solveHistory", JSON.stringify(history));
+                        // Sync to sessionStorage
+                        sessionStorage.setItem("solvedR1", JSON.stringify(r1Solves.map((s: any) => s.challengeId)));
+                        sessionStorage.setItem("solvedR2", JSON.stringify(r2Solves.map((s: any) => s.challengeId)));
+                        sessionStorage.setItem("round1Score", r1Score.toString());
+                        sessionStorage.setItem("round2Score", r2Score.toString());
+                        sessionStorage.setItem("solveHistory", JSON.stringify(history));
 
                         // Sync Round Completion - IMPORTANT: Reset state if DB says false
                         // Handle potential undefined/null from DB by defaulting to false
@@ -144,20 +144,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                         const isR2Completed = !!data.round2Completed;
 
                         setRound1Completed(isR1Completed);
-                        localStorage.setItem("round1Completed", JSON.stringify(isR1Completed));
+                        sessionStorage.setItem("round1Completed", JSON.stringify(isR1Completed));
 
                         setRound2Completed(isR2Completed);
-                        localStorage.setItem("round2Completed", JSON.stringify(isR2Completed));
+                        sessionStorage.setItem("round2Completed", JSON.stringify(isR2Completed));
                     }
                 }
             } catch (error) {
                 console.error("Failed to fetch user data from DB:", error);
                 // Fallback to localStorage logic...
-                const s1 = localStorage.getItem("round1Score");
-                const s2 = localStorage.getItem("round2Score");
-                const sol1 = localStorage.getItem("solvedR1");
-                const sol2 = localStorage.getItem("solvedR2");
-                const history = localStorage.getItem("solveHistory");
+                const s1 = sessionStorage.getItem("round1Score");
+                const s2 = sessionStorage.getItem("round2Score");
+                const sol1 = sessionStorage.getItem("solvedR1");
+                const sol2 = sessionStorage.getItem("solvedR2");
+                const history = sessionStorage.getItem("solveHistory");
 
                 if (s1 && s1 !== "undefined") setRound1Score(parseInt(s1));
                 if (s2 && s2 !== "undefined") setRound2Score(parseInt(s2));
@@ -201,10 +201,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const completeRound1 = async () => {
         if (!round1Completed) {
             setRound1Completed(true);
-            localStorage.setItem("round1Completed", "true");
+            sessionStorage.setItem("round1Completed", "true");
 
             try {
-                const user = JSON.parse(localStorage.getItem("mock_user") || "{}");
+                const user = JSON.parse(sessionStorage.getItem("mock_user") || "{}");
                 if (user.id) {
                     await fetch(`${API_URL}/api/complete-round`, {
                         method: 'POST',
@@ -221,10 +221,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const completeRound2 = async () => {
         if (!round2Completed) {
             setRound2Completed(true);
-            localStorage.setItem("round2Completed", "true");
+            sessionStorage.setItem("round2Completed", "true");
 
             try {
-                const user = JSON.parse(localStorage.getItem("mock_user") || "{}");
+                const user = JSON.parse(sessionStorage.getItem("mock_user") || "{}");
                 if (user.id) {
                     await fetch(`${API_URL}/api/complete-round`, {
                         method: 'POST',
@@ -242,18 +242,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setRound1Completed(false);
         setRound1Score(0);
         setSolvedR1([]);
-        localStorage.setItem("round1Completed", "false");
-        localStorage.setItem("round1Score", "0");
-        localStorage.setItem("solvedR1", "[]");
+        sessionStorage.setItem("round1Completed", "false");
+        sessionStorage.setItem("round1Score", "0");
+        sessionStorage.setItem("solvedR1", "[]");
     };
 
     const resetRound2 = () => {
         setRound2Completed(false);
         setRound2Score(0);
         setSolvedR2([]);
-        localStorage.setItem("round2Completed", "false");
-        localStorage.setItem("round2Score", "0");
-        localStorage.setItem("solvedR2", "[]");
+        sessionStorage.setItem("round2Completed", "false");
+        sessionStorage.setItem("round2Score", "0");
+        sessionStorage.setItem("solvedR2", "[]");
     };
 
     const banTeam = (teamName: string) => {
@@ -294,7 +294,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             if (!currentSolved.includes(challengeId)) {
                 // Call API to persist
                 try {
-                    const user = JSON.parse(localStorage.getItem("mock_user") || "{}");
+                    const user = JSON.parse(sessionStorage.getItem("mock_user") || "{}");
                     if (user.id) {
                         await fetch(`${API_URL}/api/submit`, {
                             method: 'POST',
@@ -316,20 +316,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
                 if (roundNumber === 1) {
                     setSolvedR1(newSolved);
-                    localStorage.setItem("solvedR1", JSON.stringify(newSolved));
+                    sessionStorage.setItem("solvedR1", JSON.stringify(newSolved));
 
                     setRound1Score(prev => {
                         const newScore = prev + points;
-                        localStorage.setItem("round1Score", newScore.toString());
+                        sessionStorage.setItem("round1Score", newScore.toString());
                         return newScore;
                     });
                 } else {
                     setSolvedR2(newSolved);
-                    localStorage.setItem("solvedR2", JSON.stringify(newSolved));
+                    sessionStorage.setItem("solvedR2", JSON.stringify(newSolved));
 
                     setRound2Score(prev => {
                         const newScore = prev + points;
-                        localStorage.setItem("round2Score", newScore.toString());
+                        sessionStorage.setItem("round2Score", newScore.toString());
                         return newScore;
                     });
                 }
@@ -352,7 +352,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                 };
                 const newHistory = [newRecord, ...solveHistory];
                 setSolveHistory(newHistory);
-                localStorage.setItem("solveHistory", JSON.stringify(newHistory));
+                sessionStorage.setItem("solveHistory", JSON.stringify(newHistory));
 
                 return true;
             }

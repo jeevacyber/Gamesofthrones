@@ -10,9 +10,23 @@ dotenv.config();
 
 const app = express();
 
-// CORS Configuration for Production
+// CORS Configuration
+const allowedOrigins = [
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, etc)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(null, true); // Allow all origins in dev
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
@@ -102,7 +116,7 @@ app.post('/api/submit', async (req, res) => {
 // Get Teams (for leaderboard/admin)
 app.get('/api/teams', async (req, res) => {
     try {
-        const users = await User.find({}, 'teamName email collegeName teamMember1 teamMember2 role solves round1Completed round2Completed');
+        const users = await User.find({ role: { $ne: 'admin' } }, 'teamName email collegeName teamMember1 teamMember2 role solves round1Completed round2Completed');
         // Calculate score
         const teams = users.map(u => ({
             ...u.toObject(),
@@ -127,9 +141,9 @@ app.get('/api/user/:userId', async (req, res) => {
             // If ID is invalid format (e.g. "admin-123"), treat as not found or handle mock admin
             if (req.params.userId === 'admin-123') {
                 return res.json({
-                    teamName: 'Admin Team',
+                    teamName: '',
                     email: 'admin@ctf.com',
-                    collegeName: 'Admin College',
+                    collegeName: '',
                     solves: [],
                     score: 0,
                     flagsSolved: 0,
