@@ -11,7 +11,7 @@ export interface Challenge {
 export const ROUND1_CHALLENGES: Challenge[] = [
     {
         title: "Privilege Escalation via Login Interception",
-        description: "You have found the login page of a secure company portal, and a basic guest account with the credentials guest and guest is available. Although the login works, the account has limited privileges because the website checks the user’s account level in the background and blocks normal users from accessing restricted areas. The goal is to intercept the login request and modify it so the server believes you are an Admin, thereby gaining elevated access.",
+        description: "You have found the login page of a secure company portal, and a basic guest account with the credentials guest and guest is available. Although the login works, the account has limited privileges because the website checks the user’s account level in the background and blocks normal users from accessing restricted areas. The goal is to intercept the login request and modify it so the server believes you are an Admin, thereby gaining elevated access. website https://02xg1nlm-3000.inc1.devtunnels.ms/",
         points: 100,
         difficulty: "Easy",
         hash: "51d507a2c5ae977e4c83b798970553b168a0269b69460558a40baf7337d3140e",
@@ -35,7 +35,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
     },
     {
         title: "SQL Injection Master",
-        description: "Bypass login or extract data from a vulnerable database using SQL injection. The flag hides within the ceremonial flames of the database.",
+        description: "Bypass login or extract data from a vulnerable database using SQL injection. The flag hides within the ceremonial flames of the database.sql https://02xg1nlm-5000.inc1.devtunnels.ms/",
         points: 250,
         difficulty: "Medium",
         hash: "47242b6c44575b10b3abed6a4be1897b6cb8f12e224ed84a3d43721e212101b4",
@@ -51,7 +51,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
     },
     {
         title: "Port Voyager",
-        description: "Enumerate all services on the target machine to find the open backdoor. The dragon's lair is full of open ports for the unwary.",
+        description: "Enumerate all services on the target machine to find the open backdoor. The dragon's lair is full of open ports for the unwary.multi port service https://02xg1nlm-80.inc1.devtunnels.ms/",
         points: 300,
         difficulty: "Hard",
         hash: "19d476c578189bc976a92fd4ed3343e808de679ebce094f4e830fd016e5b3615",
@@ -59,7 +59,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
     },
     {
         title: "OSINT Detective",
-        description: "Use your OSINT skills to find and crack a hidden zip file. Find the identity of the keeper from their digital footprint.",
+        description: "Use your OSINT skills to find and crack a hidden zip file. Find the identity of the keeper from their digital footprint. portfolio https://website-host-cloud.github.io/portfolio/",
         points: 150,
         difficulty: "Easy",
         hash: "1266bb94982de67c40fd5b85cb0a99bd1c46d6bd42144e1c1e7c7309cbd21795",
@@ -81,6 +81,14 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         hash: "9e5bbdeeba472c9847c974bd28ef01cdadd2eac4f406937a03eb26c5fe48aa3f",
         downloadLink: "/challenges/Deep Excavation.dd.gz"
     },
+    {
+        title: "The Gatekeeper's Oversight",
+        description: "Our lead developer left a testing portal active on the internal network. We’ve been told it’s secure because \"only the admin knows the secret URL,\" but we suspect the authentication is a bit... thin. Can you find a way to escalate your privileges and retrieve the flag?\n\nHint\nDon't just look at the page—look into it. The browser's View Source (Ctrl+U) reveals what the developer tried to hide.\n\nOnce you're inside, keep a close eye on the Address Bar. Sometimes, you can just tell the server who you want to be. gate keeper https://02xg1nlm-2304.inc1.devtunnels.ms/",
+        points: 200,
+        difficulty: "Medium",
+        hash: "08ec29959c2506da7bc47696df7a857db0623043a69a03bba2e22453d5153e3b"
+    },
+
 ];
 
 export const ROUND2_CHALLENGES: Challenge[] = [
