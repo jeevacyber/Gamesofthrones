@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Leaderboard from "@/components/Leaderboard";
 import { useEffect, useState } from "react";
 import API_URL from "@/config/api";
+import { ROUND1_TITLES, ROUND2_TITLES } from "@/data/challenges";
 
 interface TeamEntry {
   rank: number;
@@ -21,11 +22,9 @@ const LeaderboardPage = () => {
         const res = await fetch(`${API_URL}/api/teams`);
         const data = await res.json();
         if (Array.isArray(data)) {
-          const r1Titles = ["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"];
-
           // Process Round 1 Leaderboard
           const r1Data = data.map(t => {
-            const r1Solves = t.solves.filter((s: any) => r1Titles.includes(s.challengeId));
+            const r1Solves = t.solves.filter((s: any) => ROUND1_TITLES.includes(s.challengeId));
             return {
               team: t.teamName,
               score: r1Solves.reduce((acc: number, s: any) => acc + s.points, 0),
@@ -41,7 +40,7 @@ const LeaderboardPage = () => {
 
           // Process Round 2 Leaderboard
           const r2Data = data.map(t => {
-            const r2Solves = t.solves.filter((s: any) => !r1Titles.includes(s.challengeId));
+            const r2Solves = t.solves.filter((s: any) => ROUND2_TITLES.includes(s.challengeId));
             return {
               team: t.teamName,
               score: r2Solves.reduce((acc: number, s: any) => acc + s.points, 0),
@@ -84,11 +83,11 @@ const LeaderboardPage = () => {
 
         <div className="grid lg:grid-cols-2 gap-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <h3 className="font-cinzel text-lg font-bold gradient-text-fire mb-4 text-center">🐉 Round 1 — Fire Kingdom</h3>
+            <h3 className="font-cinzel text-lg font-bold gradient-text-fire mb-4 text-center">🐉 Round 1 — Kingdom of Fire</h3>
             <Leaderboard entries={round1Teams} theme="fire" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <h3 className="font-cinzel text-lg font-bold gradient-text-ice mb-4 text-center">⚔ Round 2 — Ice Kingdom</h3>
+            <h3 className="font-cinzel text-lg font-bold gradient-text-ice mb-4 text-center">⚔ Round 2 — Kingdom of Ice</h3>
             <Leaderboard entries={round2Teams} theme="ice" />
           </motion.div>
         </div>

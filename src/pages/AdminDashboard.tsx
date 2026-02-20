@@ -5,6 +5,7 @@ import { Lock, Unlock, Users, Flag, Clock, Crown, Download, Trash2, ArrowLeft, R
 import Navbar from "@/components/Navbar";
 import { useGame } from "@/hooks/useGame";
 import API_URL from "@/config/api";
+import { ROUND1_TITLES } from "@/data/challenges";
 
 interface TeamData {
   _id: string; // MongoDB ID
@@ -64,10 +65,10 @@ const AdminDashboard = () => {
       teamName: t.teamName,
       challengeTitle: s.challengeId || "Unknown",
       points: s.points,
-      timestamp: s.timestamp || "N/A", // Already formatted string from DB
-      round: (["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"].includes(s.challengeId) ? 1 : 2) as 1 | 2
+      timestamp: s.timestamp || "N/A",
+      round: (ROUND1_TITLES.includes(s.challengeId) ? 1 : 2) as 1 | 2
     }))
-  ).sort((a, b) => new Date(b.timestamp).getTime() - b.timestamp.localeCompare(a.timestamp))
+  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .filter(h =>
       h.teamName.toLowerCase().includes(historySearch.toLowerCase()) ||
       h.challengeTitle.toLowerCase().includes(historySearch.toLowerCase())
@@ -77,11 +78,7 @@ const AdminDashboard = () => {
   const teams = dbTeams
     .filter(t => !bannedTeams.includes(t.teamName))
     .sort((a, b) => {
-      // Primary sort: Score (Descending)
       if (b.score !== a.score) return b.score - a.score;
-
-      // Secondary sort: Last Solve Time (Ascending - earliest first)
-      // We parse the stored timestamp string. Note: new Date() handles the "Feb 18, 2026, 2:30:15 PM" format.
       const lastA = a.solves && a.solves.length > 0 ? new Date(a.solves[a.solves.length - 1].timestamp).getTime() : Infinity;
       const lastB = b.solves && b.solves.length > 0 ? new Date(b.solves[b.solves.length - 1].timestamp).getTime() : Infinity;
       return lastA - lastB;
@@ -96,10 +93,8 @@ const AdminDashboard = () => {
   // Calculate stats for table
   const getRoundStats = (solves: any[]) => {
     const safeSolves = solves || [];
-    // Hardcoded lists for now to distinguish R1/R2
-    const r1Titles = ["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"];
-    const r1Solves = safeSolves.filter(s => s.challengeId && r1Titles.includes(s.challengeId));
-    const r2Solves = safeSolves.filter(s => s.challengeId && !r1Titles.includes(s.challengeId));
+    const r1Solves = safeSolves.filter(s => s.challengeId && ROUND1_TITLES.includes(s.challengeId));
+    const r2Solves = safeSolves.filter(s => s.challengeId && !ROUND1_TITLES.includes(s.challengeId));
 
     return {
       r1Count: r1Solves.length,
@@ -112,74 +107,20 @@ const AdminDashboard = () => {
   const totalSolves = teams.reduce((acc, t) => acc + (t.solves ? t.solves.length : 0), 0);
 
   const handleExportCSV = () => {
-    // 1. Define headers
-    const headers = [
-      "Rank",
-      "Team Name",
-      "College Name",
-      "Total Score",
-      "R1 Score",
-      "R2 Score",
-      "Total Solves",
-      "R1 Solves",
-      "R2 Solves",
-      "Last Solve Time",
-      "Email",
-      "Full Solve History (Challenge: Time)"
-    ];
-
-    // 2. Sort and Map data
-    const sortedTeams = [...teams].sort((a, b) => {
-      // Primary sort: Score (Descending)
-      if (b.score !== a.score) return b.score - a.score;
-
-      // Secondary sort: Last Solve Time (Ascending - earliest first)
-      const lastA = a.solves && a.solves.length > 0 ? new Date(a.solves[a.solves.length - 1].timestamp).getTime() : Infinity;
-      const lastB = b.solves && b.solves.length > 0 ? new Date(b.solves[b.solves.length - 1].timestamp).getTime() : Infinity;
-      return lastA - lastB;
-    });
-
-    const rows = sortedTeams.map((t, index) => {
+    const headers = ["Rank", "Team Name", "College Name", "Total Score", "R1 Score", "R2 Score", "Total Solves", "R1 Solves", "R2 Solves", "Last Solve Time", "Email", "Full Solve History (Challenge: Time)"];
+    const rows = [...teams].map((t, index) => {
       const stats = getRoundStats(t.solves);
-
-      // Get last solve time
-      const lastSolve = t.solves && t.solves.length > 0
-        ? t.solves[t.solves.length - 1].timestamp
-        : "N/A";
-
-      // Format full history as a single string
-      const historyStr = (t.solves || [])
-        .map(s => `${s.challengeId} (${s.points}pts) @ ${s.timestamp}`)
-        .join(" | ");
-
-      return [
-        index + 1, // Rank
-        `"${t.teamName.replace(/"/g, '""')}"`,
-        `"${t.collegeName.replace(/"/g, '""')}"`,
-        t.score,
-        stats.r1Score,
-        stats.r2Score,
-        t.solves ? t.solves.length : 0,
-        stats.r1Count,
-        stats.r2Count,
-        `"${lastSolve}"`,
-        `"${t.email}"`,
-        `"${historyStr.replace(/"/g, '""')}"`
-      ].join(",");
+      const lastSolve = t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp : "N/A";
+      const historyStr = (t.solves || []).map(s => `${s.challengeId} (${s.points}pts) @ ${s.timestamp}`).join(" | ");
+      return [index + 1, `"${t.teamName.replace(/"/g, '""')}"`, `"${t.collegeName.replace(/"/g, '""')}"`, t.score, stats.r1Score, stats.r2Score, t.solves ? t.solves.length : 0, stats.r1Count, stats.r2Count, `"${lastSolve}"`, `"${t.email}"`, `"${historyStr.replace(/"/g, '""')}"`].join(",");
     });
-
-    // 3. Combine
     const csvContent = [headers.join(","), ...rows].join("\n");
-
-    // 4. Create Blob and Download
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `ctf_comprehensive_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `ctf_export_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -191,11 +132,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="relative z-10 pt-24 pb-16 px-4 max-w-6xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 group"
-        >
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 group">
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="font-mono text-sm">Back</span>
         </button>
@@ -205,44 +142,34 @@ const AdminDashboard = () => {
           <h1 className="font-cinzel text-3xl md:text-4xl font-bold gradient-text-gold">Admin Dashboard</h1>
         </motion.div>
 
-        {/* Round Controls */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="admin-card p-6">
+          <div className="admin-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-cinzel font-bold text-lg gradient-text-fire">🐉 Round 1</h3>
               <span className={`text-xs px-3 py-1 rounded-full font-bold ${round1Locked ? "bg-destructive/20 text-destructive" : "bg-green-500/20 text-green-400"}`}>
                 {round1Locked ? "LOCKED" : "UNLOCKED"}
               </span>
             </div>
-            <button
-              onClick={toggleRound1}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-sm transition-all ${round1Locked ? "btn-fire" : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                }`}
-            >
+            <button onClick={toggleRound1} className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-sm transition-all ${round1Locked ? "btn-fire" : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"}`}>
               {round1Locked ? <Unlock size={16} /> : <Lock size={16} />}
               {round1Locked ? "Unlock Round 1" : "Lock Round 1"}
             </button>
-          </motion.div>
+          </div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="admin-card p-6">
+          <div className="admin-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-cinzel font-bold text-lg gradient-text-ice">⚔ Round 2</h3>
               <span className={`text-xs px-3 py-1 rounded-full font-bold ${round2Locked ? "bg-destructive/20 text-destructive" : "bg-green-500/20 text-green-400"}`}>
                 {round2Locked ? "LOCKED" : "UNLOCKED"}
               </span>
             </div>
-            <button
-              onClick={toggleRound2}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-sm transition-all ${round2Locked ? "btn-ice" : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                }`}
-            >
+            <button onClick={toggleRound2} className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-sm transition-all ${round2Locked ? "btn-ice" : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"}`}>
               {round2Locked ? <Unlock size={16} /> : <Lock size={16} />}
               {round2Locked ? "Unlock Round 2" : "Lock Round 2"}
             </button>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { icon: Users, label: "Teams", value: teams.length.toString(), color: "text-royal-gold" },
@@ -258,14 +185,10 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Teams Table */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="admin-card overflow-hidden">
+        <div className="admin-card overflow-hidden">
           <div className="p-4 border-b border-royal-gold/20 flex items-center justify-between">
-            <h3 className="font-cinzel font-bold text-lg gradient-text-gold">Registered Teams - Database</h3>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-royal-gold/10 text-royal-gold border border-royal-gold/20 hover:bg-royal-gold/20 transition-colors"
-            >
+            <h3 className="font-cinzel font-bold text-lg gradient-text-gold">Registered Teams</h3>
+            <button onClick={handleExportCSV} className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-royal-gold/10 text-royal-gold border border-royal-gold/20 hover:bg-royal-gold/20 transition-colors">
               <Download size={14} /> Export CSV
             </button>
           </div>
@@ -279,115 +202,36 @@ const AdminDashboard = () => {
                   <th className="text-center p-3">R2 Score</th>
                   <th className="text-center p-3">Total Score</th>
                   <th className="text-center p-3">Last Solve</th>
-                  <th className="text-center p-3">Re-Open</th>
                   <th className="text-center p-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/10">
-                {teams.length === 0 ? (
-                  <tr><td colSpan={9} className="p-4 text-center text-muted-foreground">No active teams found in database.</td></tr>
-                ) : (
-                  teams.map((t) => {
-                    const stats = getRoundStats(t.solves);
-                    return (
-                      <tr key={t._id} className={`hover:bg-secondary/20 transition-colors ${t.round1Completed || t.round2Completed ? "bg-royal-gold/5" : ""}`}>
-                        <td className="p-3 text-sm font-mono text-foreground">
-                          {t.teamName}
-                          {(t.round1Completed) && <span className="ml-2 text-[10px] bg-fire-orange text-black px-1 rounded font-bold">R1 DONE</span>}
-                          {(t.round2Completed) && <span className="ml-2 text-[10px] bg-ice-blue text-black px-1 rounded font-bold">R2 DONE</span>}
-                        </td>
-                        <td className="p-3 text-sm text-muted-foreground">{t.collegeName}</td>
-                        <td className="p-3 text-sm text-center text-fire-gold font-bold">{stats.r1Score} ({stats.r1Count})</td>
-                        <td className="p-3 text-sm text-center text-ice-frost font-bold">{stats.r2Score} ({stats.r2Count})</td>
-                        <td className="p-3 text-sm text-center text-royal-gold font-bold">{t.score}</td>
-                        <td className="p-3 text-xs text-center text-muted-foreground font-mono">
-                          {t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp.split(',')[1] : "Never"}
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => handleResetRound(t._id, 1, t.teamName)}
-                              className="text-xs px-2 py-1 bg-fire-orange/10 border border-fire-orange/30 text-fire-orange rounded hover:bg-fire-orange/20 transition-colors"
-                              title="Re-open Round 1 for this team"
-                            >
-                              <RefreshCw size={12} className="inline mr-1" />R1
-                            </button>
-                            <button
-                              onClick={() => handleResetRound(t._id, 2, t.teamName)}
-                              className="text-xs px-2 py-1 bg-ice-blue/10 border border-ice-blue/30 text-ice-blue rounded hover:bg-ice-blue/20 transition-colors"
-                              title="Re-open Round 2 for this team"
-                            >
-                              <RefreshCw size={12} className="inline mr-1" />R2
-                            </button>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center">
-                          <button
-                            onClick={() => handleBanTeam(t.teamName)}
-                            className="text-destructive/60 hover:text-destructive transition-colors"
-                            title="Delete Team"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-
-        {/* Solve History Table */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="admin-card overflow-hidden mt-8">
-          <div className="p-4 border-b border-royal-gold/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h3 className="font-cinzel font-bold text-lg gradient-text-ice">Live Solve History (Global)</h3>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search team or challenge..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="bg-secondary/30 border border-royal-gold/20 rounded-lg px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:border-royal-gold/50 transition-colors font-mono"
-              />
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border/20 text-xs text-muted-foreground uppercase tracking-wider">
-                  <th className="text-left p-3">Time</th>
-                  <th className="text-left p-3">Team</th>
-                  <th className="text-center p-3">Round</th>
-                  <th className="text-left p-3">Challenge</th>
-                  <th className="text-center p-3">Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/10">
-                {dbHistory.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-4 text-center text-muted-foreground italic">No solves yet.</td>
-                  </tr>
-                ) : (
-                  dbHistory.map((record, index) => (
-                    <tr key={index} className="hover:bg-secondary/20 transition-colors">
-                      <td className="p-3 text-sm text-muted-foreground font-mono">{record.timestamp}</td>
-                      <td className="p-3 text-sm font-bold text-fire-orange">{record.teamName}</td>
-                      <td className="p-3 text-sm text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${record.round === 1 ? "bg-fire-orange/20 text-fire-orange border-fire-orange/30" : "bg-ice-blue/20 text-ice-blue border-ice-blue/30"}`}>
-                          R{record.round}
-                        </span>
+                {teams.map((t) => {
+                  const stats = getRoundStats(t.solves);
+                  return (
+                    <tr key={t._id} className="hover:bg-secondary/20 transition-colors">
+                      <td className="p-3 text-sm font-mono text-foreground">{t.teamName}</td>
+                      <td className="p-3 text-sm text-muted-foreground">{t.collegeName}</td>
+                      <td className="p-3 text-sm text-center text-fire-gold font-bold">{stats.r1Score}</td>
+                      <td className="p-3 text-sm text-center text-ice-frost font-bold">{stats.r2Score}</td>
+                      <td className="p-3 text-sm text-center text-royal-gold font-bold">{t.score}</td>
+                      <td className="p-3 text-xs text-center text-muted-foreground font-mono">
+                        {t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp.split(',')[1] : "Never"}
                       </td>
-                      <td className="p-3 text-sm text-foreground">{record.challengeTitle}</td>
-                      <td className="p-3 text-sm text-center text-royal-gold font-bold">+{record.points}</td>
+                      <td className="p-3 text-center">
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => handleResetRound(t._id, 1, t.teamName)} className="text-xs px-2 py-1 bg-fire-orange/10 border border-fire-orange/30 text-fire-orange rounded hover:bg-fire-orange/20"><RefreshCw size={12} /></button>
+                          <button onClick={() => handleResetRound(t._id, 2, t.teamName)} className="text-xs px-2 py-1 bg-ice-blue/10 border border-ice-blue/30 text-ice-blue rounded hover:bg-ice-blue/20"><RefreshCw size={12} /></button>
+                          <button onClick={() => handleBanTeam(t.teamName)} className="text-destructive/60 hover:text-destructive"><Trash2 size={14} /></button>
+                        </div>
+                      </td>
                     </tr>
-                  ))
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { sha256 } from "@/utils/crypto";
 import API_URL from "@/config/api";
+import { ROUND1_TITLES, ROUND2_TITLES } from "@/data/challenges";
 
 export interface SolveRecord {
     teamName: string;
@@ -106,11 +107,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                     if (response.ok) {
                         const data = await response.json();
 
-                        // Separate solves by round based on challenge titles
-                        const r1Titles = ["The Dragon's Whisper", "Burning Pages", "Ember Trail", "Fire & Smoke", "Valyrian Script", "Dragon's Lair", "Flame Keeper", "Molten Core", "Ash & Bone", "Dragonfire"];
-
-                        const r1Solves = data.solves.filter((s: any) => r1Titles.includes(s.challengeId));
-                        const r2Solves = data.solves.filter((s: any) => !r1Titles.includes(s.challengeId));
+                        // Separate solves by round based on central titles
+                        const r1Solves = data.solves.filter((s: any) => ROUND1_TITLES.includes(s.challengeId));
+                        const r2Solves = data.solves.filter((s: any) => ROUND2_TITLES.includes(s.challengeId));
 
                         const r1Score = r1Solves.reduce((acc: number, s: any) => acc + s.points, 0);
                         const r2Score = r2Solves.reduce((acc: number, s: any) => acc + s.points, 0);
@@ -127,7 +126,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                             challengeTitle: s.challengeId,
                             points: s.points,
                             timestamp: s.timestamp, // Already formatted string from DB
-                            round: (r1Titles.includes(s.challengeId) ? 1 : 2) as 1 | 2
+                            round: (ROUND1_TITLES.includes(s.challengeId) ? 1 : 2) as 1 | 2
                         })).reverse();
                         setSolveHistory(history);
 
@@ -138,8 +137,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                         sessionStorage.setItem("round2Score", r2Score.toString());
                         sessionStorage.setItem("solveHistory", JSON.stringify(history));
 
-                        // Sync Round Completion - IMPORTANT: Reset state if DB says false
-                        // Handle potential undefined/null from DB by defaulting to false
+                        // Sync Round Completion
                         const isR1Completed = !!data.round1Completed;
                         const isR2Completed = !!data.round2Completed;
 
@@ -152,7 +150,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                 }
             } catch (error) {
                 console.error("Failed to fetch user data from DB:", error);
-                // Fallback to localStorage logic...
+                // Fallback to sessionStorage logic...
                 const s1 = sessionStorage.getItem("round1Score");
                 const s2 = sessionStorage.getItem("round2Score");
                 const sol1 = sessionStorage.getItem("solvedR1");
@@ -275,18 +273,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, round })
             });
-            // Ideally we would trigger a refresh of dbTeams in AdminDashboard or similar
         } catch (e) {
             console.error("Failed to reset round for user", e);
         }
     };
 
     const submitFlag = async (challengeId: string, flagInput: string, expectedHash: string, points: number, teamName: string, roundNumber: 1 | 2): Promise<boolean> => {
-        // Backend simulation: Hash check
         const inputHash = await sha256(flagInput.trim());
-        console.log(`Submitting flag: "${flagInput.trim()}"`);
-        console.log(`Calculated Hash: ${inputHash}`);
-        console.log(`Expected Hash:   ${expectedHash}`);
 
         if (inputHash === expectedHash) {
             const currentSolved = roundNumber === 1 ? solvedR1 : solvedR2;
@@ -302,7 +295,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                             body: JSON.stringify({
                                 userId: user.id,
                                 challengeId,
-                                flag: flagInput,
+                                flag: inputHash,
                                 points
                             }),
                         });

@@ -1,35 +1,11 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 // Round 2 Challenges
-import { Snowflake, Trophy, History, Star, LogOut, ArrowLeft, Swords, Shield } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import { Swords, Trophy, History, LogOut, ArrowLeft, Shield } from "lucide-react";
 import ChallengeCard from "@/components/ChallengeCard";
-import Leaderboard from "@/components/Leaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useGame } from "@/hooks/useGame";
-
-const challenges = [
-  { title: "The Night's Watch", description: "Breach the firewall of the Night's Watch. Find the vulnerability.", points: 150, difficulty: "Easy" as const, hash: "92a59bfa4a821d6f6758607ba7214f4c39925b7dfeafca788264b82f52c7244f" },
-  { title: "White Walker", description: "A zombie process holds the key. Terminate it and claim the flag.", points: 200, difficulty: "Medium" as const, hash: "33ea3444f50ab5f65211644b0a43e748f051aad12d48e83c69cf7fc0d8def041" },
-  { title: "Iron Throne", description: "Escalate your privileges to sit on the Iron Throne.", points: 350, difficulty: "Hard" as const, hash: "6085ac70cf9bec7632c7424d3425c048ee57effbd75adecac8f9afeac7c4c2b0" },
-  { title: "Winterfell Breach", description: "Exploit a buffer overflow in the castle defenses.", points: 300, difficulty: "Hard" as const, hash: "537286f8d859514c872ed3b7b62d70a80968fd8ae35dfb6b898f486ad076b74a" },
-  { title: "Raven's Message", description: "Intercept and decode the encrypted raven message.", points: 200, difficulty: "Medium" as const, hash: "b3cc9ba1e9ccb29fcbba04d2f0116b3acf745e1adca13142c93167615665c052" },
-  { title: "Stark's Secret", description: "Reverse engineer the Stark family's authentication mechanism.", points: 250, difficulty: "Medium" as const, hash: "93813242b1001000d13b473b6718b4b5be0c629cf8e16d4ebecffe10ceadca5f" },
-  { title: "Wildfire", description: "A dangerous binary awaits. Defuse it to find the flag.", points: 400, difficulty: "Hard" as const, hash: "3d4d429770e7af6c5124e2f6376f27dd5d0986a2ca0462f239284966977807dd" },
-  { title: "The Wall", description: "Bypass the wall's defense mechanisms using exploitation techniques.", points: 300, difficulty: "Hard" as const, hash: "458e286f01f460bf90965f7ac8c736b012b4ff53e4c994fc3d6699bf5a8a7a3e" },
-  { title: "King's Landing", description: "Navigate a complex network to reach the king's secrets.", points: 250, difficulty: "Medium" as const, hash: "4b268e999bb60c4aa725b6e51ea2b1d4a301c67072edf2dc729fe4754650da08" },
-  { title: "Faceless Men", description: "Authentication bypass — become no one to access everything.", points: 350, difficulty: "Hard" as const, hash: "65d91bf1fda333cd98099d9cd2b5f0f8910d0022b2c69dcc8c420d3e9bc836f4" },
-  { title: "Valar Morghulis", description: "The ultimate challenge. All men must die — all flags must fall.", points: 500, difficulty: "Hard" as const, hash: "bf05be79abcc23c16eded043300b58caf8b0f7f561016c69d3d1d8aa2c820e9d" },
-];
-
-const mockLeaderboard = [
-  { rank: 1, team: "IceBreakers", score: 2500, lastSolve: "1m ago" },
-  { rank: 2, team: "WinterIsComing", score: 2100, lastSolve: "4m ago" },
-  { rank: 3, team: "NightKings", score: 1800, lastSolve: "8m ago" },
-  { rank: 4, team: "FrostByte", score: 1400, lastSolve: "15m ago" },
-  { rank: 5, team: "WhiteHackers", score: 1100, lastSolve: "25m ago" },
-];
+import { ROUND2_CHALLENGES } from "@/data/challenges";
 
 const Round2 = () => {
   const { user, logout } = useAuth();
@@ -159,8 +135,8 @@ const Round2 = () => {
               transition={{ duration: 1, delay: 0.5 }}
               className="h-1 bg-gradient-to-r from-transparent via-ice-blue to-transparent mx-auto mb-4"
             />
-            <p className="text-ice-frost font-mono text-lg mb-2 drop-shadow-[0_0_15px_rgba(33,150,243,0.6)] font-bold">
-              ROUND 2 — 11 Challenges
+            <p className="text-ice-frost font-mono text-lg mb-2 drop-shadow-[0_0_15px_rgba(33,150,243,0.6)] font-bold uppercase tracking-widest">
+              Round 2 — 11 Challenges — Kingdom of Ice
             </p>
             <p className="text-gray-300 font-cinzel italic text-base">
               "Winter is Coming... and so are the Flags"
@@ -215,7 +191,7 @@ const Round2 = () => {
           transition={{ delay: 0.5 }}
           className="grid md:grid-cols-2 gap-6 mb-12"
         >
-          {challenges.map((c, i) => (
+          {ROUND2_CHALLENGES.map((c, i) => (
             <motion.div
               key={c.title}
               initial={{ opacity: 0, y: 20 }}

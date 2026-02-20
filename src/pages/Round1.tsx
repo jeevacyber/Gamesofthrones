@@ -6,19 +6,7 @@ import Navbar from "@/components/Navbar";
 import ChallengeCard from "@/components/ChallengeCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useGame } from "@/hooks/useGame";
-
-const challenges = [
-  { title: "The Dragon's Whisper", description: "A hidden message lies within the dragon's breath. Decode the ancient cipher.", points: 100, difficulty: "Easy" as const, hash: "3a4a07d7f3878ffb9432dbf428deca4998ee77075957cc17ef0401628219268f", downloadLink: "/challenges/dragons_whisper.zip" },
-  { title: "Burning Pages", description: "A web application guards a secret. Find the vulnerability and claim the flag.", points: 150, difficulty: "Easy" as const, hash: "4c58d68b75c5139d2e4b6aff779c6c22d8bd6213c339be8e62fe98bff3e5f3bd", downloadLink: "/challenges/burning_pages.zip" },
-  { title: "Ember Trail", description: "Follow the trail of digital embers to uncover hidden metadata.", points: 200, difficulty: "Medium" as const, hash: "d355b28b1727e0a4240cfea6f2da7145161596d254522484ef5e9f6e35f91dea", downloadLink: "/challenges/ember_trail.zip" },
-  { title: "Fire & Smoke", description: "Steganography challenge — the flag hides within the flames.", points: 250, difficulty: "Medium" as const, hash: "c153222611d0138de7770e36ec0c79afa47ffff689f565f4a70440a59b3704b1", downloadLink: "/challenges/fire_and_smoke.zip" },
-  { title: "Valyrian Script", description: "An ancient encoding scheme protects this flag. Crack it.", points: 200, difficulty: "Medium" as const, hash: "a466091d2a5c502af8953f108e74d35a1ad0086c369609a1060e8ddcdd27bb81", downloadLink: "/challenges/valyrian_script.zip" },
-  { title: "Dragon's Lair", description: "Navigate the filesystem of a compromised server to find evidence.", points: 300, difficulty: "Hard" as const, hash: "4607a329c9c383280356b2e6d0790fd8e38550ae741228a5919cba98da1e36fd", downloadLink: "/challenges/dragons_lair.zip" },
-  { title: "Flame Keeper", description: "OSINT challenge — find the keeper of the eternal flame.", points: 150, difficulty: "Easy" as const, hash: "c416e54503d82ae607646288ba3bc3aece2cae406431f4794029c9771d63e393", downloadLink: "/challenges/flame_keeper.zip" },
-  { title: "Molten Core", description: "A binary hidden in molten data. Extract and analyze.", points: 350, difficulty: "Hard" as const, hash: "d4f49bda7599f1f12d9d59e9b0213da00e18e190401323f2972f42c2976ffd72", downloadLink: "/challenges/molten_core.zip" },
-  { title: "Ash & Bone", description: "Forensics challenge — recover deleted artifacts from the ashes.", points: 300, difficulty: "Hard" as const, hash: "d57062f6884f734111d7bc2529ef5327536c3b327f0f4cfb19e9fcf429512ef7", downloadLink: "/challenges/ash_and_bone.zip" },
-  { title: "Dragonfire", description: "The final challenge. Combine all skills to claim the ultimate flag.", points: 500, difficulty: "Hard" as const, hash: "e6ddaf875651dbe8cf1993a384ed70787747cd765743e4642b389eb61e108a03", downloadLink: "/challenges/dragonfire.zip" },
-];
+import { ROUND1_CHALLENGES } from "@/data/challenges";
 
 const Round1 = () => {
   const { user, logout } = useAuth();
@@ -140,7 +128,7 @@ const Round1 = () => {
           >
             <Flame className="w-16 h-16 text-fire-orange mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,87,34,1)]" />
             <h1 className="font-cinzel text-5xl md:text-7xl font-black gradient-text-fire mb-3 drop-shadow-[0_0_40px_rgba(255,87,34,0.8)]">
-              House of the Dragon
+              House of the Dragon CTF
             </h1>
             <motion.div
               initial={{ width: 0 }}
@@ -148,8 +136,8 @@ const Round1 = () => {
               transition={{ duration: 1, delay: 0.5 }}
               className="h-1 bg-gradient-to-r from-transparent via-fire-orange to-transparent mx-auto mb-4"
             />
-            <p className="text-fire-gold font-mono text-lg mb-2 drop-shadow-[0_0_15px_rgba(255,87,34,0.6)] font-bold">
-              ROUND 1 — 10 Challenges — Fire Kingdom
+            <p className="text-fire-gold font-mono text-lg mb-2 drop-shadow-[0_0_15px_rgba(255,87,34,0.6)] font-bold uppercase tracking-widest">
+              Round 1 — 10 Challenges — Kingdom of Fire
             </p>
             <p className="text-gray-300 font-cinzel italic text-base">
               "Dracarys... Let the games begin"
@@ -204,7 +192,7 @@ const Round1 = () => {
           transition={{ delay: 0.5 }}
           className="grid md:grid-cols-2 gap-6 mb-12"
         >
-          {challenges.map((c, i) => (
+          {ROUND1_CHALLENGES.map((c, i) => (
             <motion.div
               key={c.title}
               initial={{ opacity: 0, y: 20 }}
