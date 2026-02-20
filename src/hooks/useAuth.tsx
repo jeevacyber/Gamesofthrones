@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { user: null, error: data.error };
       }
     } catch (error) {
+      console.error("Login error:", error);
       return { user: null, error: "Network error" };
     } finally {
       setIsLoading(false);
@@ -100,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { user: null, error: data.error };
       }
     } catch (error) {
+      console.error("Registration error:", error);
       return { user: null, error: "Network error" };
     } finally {
       setIsLoading(false);
