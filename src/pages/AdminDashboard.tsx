@@ -216,7 +216,7 @@ const AdminDashboard = () => {
                       <td className="p-3 text-sm text-center text-ice-frost font-bold">{stats.r2Score}</td>
                       <td className="p-3 text-sm text-center text-royal-gold font-bold">{t.score}</td>
                       <td className="p-3 text-xs text-center text-muted-foreground font-mono">
-                        {t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp.split(',')[1] : "Never"}
+                        {t.solves && t.solves.length > 0 ? t.solves[t.solves.length - 1].timestamp.split(',').length > 1 ? t.solves[t.solves.length - 1].timestamp.split(',')[1] : t.solves[t.solves.length - 1].timestamp : "Never"}
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex justify-center gap-2">
@@ -228,6 +228,59 @@ const AdminDashboard = () => {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Solve History Section */}
+        <div className="mt-8 admin-card overflow-hidden">
+          <div className="p-4 border-b border-royal-gold/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-fire-orange" />
+              <h3 className="font-cinzel font-bold text-lg gradient-text-fire">Solve History</h3>
+            </div>
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="Search Team or Flag..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="w-full bg-secondary/50 border border-border/30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-fire-orange/50 transition-colors"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border/20 text-xs text-muted-foreground uppercase tracking-wider">
+                  <th className="text-left p-3">Time</th>
+                  <th className="text-left p-3">Team Name</th>
+                  <th className="text-center p-3">Round</th>
+                  <th className="text-left p-3">Challenge/Flag</th>
+                  <th className="text-center p-3">Points</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/10 text-xs font-mono">
+                {dbHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground font-cinzel">No solves recorded yet</td>
+                  </tr>
+                ) : (
+                  dbHistory.map((h, i) => (
+                    <tr key={i} className="hover:bg-secondary/20 transition-colors">
+                      <td className="p-3 text-muted-foreground whitespace-nowrap">{h.timestamp}</td>
+                      <td className="p-3 text-foreground font-bold">{h.teamName}</td>
+                      <td className="p-3 text-center">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${h.round === 1 ? "bg-fire-orange/20 text-fire-orange" : "bg-ice-blue/20 text-ice-blue"}`}>
+                          RD {h.round}
+                        </span>
+                      </td>
+                      <td className="p-3 text-foreground">{h.challengeTitle}</td>
+                      <td className="p-3 text-center text-royal-gold font-bold">+{h.points}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -104,7 +104,7 @@ const Login = () => {
           <div className="mt-6 space-y-3">
             <button
               onClick={() => navigate("/admin/login")}
-              className="w-full flex items-center justify-center gap-2 glass-card px-4 py-3 text-sm font-bold uppercase tracking-wider text-fire-orange hover:bg-secondary/50 transition-all rounded-lg border border-fire-orange/30"
+              className="hidden w-full flex items-center justify-center gap-2 glass-card px-4 py-3 text-sm font-bold uppercase tracking-wider text-fire-orange hover:bg-secondary/50 transition-all rounded-lg border border-fire-orange/30"
             >
               <Crown size={16} />
               Admin Login

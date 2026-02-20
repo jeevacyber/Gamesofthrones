@@ -55,7 +55,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         points: 300,
         difficulty: "Hard",
         hash: "19d476c578189bc976a92fd4ed3343e808de679ebce094f4e830fd016e5b3615",
-        downloadLink: "/challenges/dragons_lair.zip"
+        //downloadLink: "/challenges/dragons_lair.zip"
     },
     {
         title: "OSINT Detective",
@@ -86,7 +86,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         description: "Our lead developer left a testing portal active on the internal network. We’ve been told it’s secure because \"only the admin knows the secret URL,\" but we suspect the authentication is a bit... thin. Can you find a way to escalate your privileges and retrieve the flag?\n\nHint\nDon't just look at the page—look into it. The browser's View Source (Ctrl+U) reveals what the developer tried to hide.\n\nOnce you're inside, keep a close eye on the Address Bar. Sometimes, you can just tell the server who you want to be. gate keeper https://02xg1nlm-2304.inc1.devtunnels.ms/",
         points: 200,
         difficulty: "Medium",
-        hash: "08ec29959c2506da7bc47696df7a857db0623043a69a03bba2e22453d5153e3b"
+        hash: "034769d70c87348a749f4207d4b8d6061383f5bc0d65c005fcf486616b39217a"
     },
 
 ];
