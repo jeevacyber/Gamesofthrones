@@ -15,7 +15,7 @@ const allowedOrigins = [
     'http://localhost:8080',
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://gamesofthrones.vercel.app',
+    'https://gamesofthrones-ivto.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
