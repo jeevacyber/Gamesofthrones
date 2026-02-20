@@ -47,7 +47,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         points: 200,
         difficulty: "Medium",
         hash: "7725e826f37df182a8f1a1e7526a03408a4c0678c246192a4fc1344af554752e",
-        downloadLink: "/challenges/Double Vision.jpg"
+        downloadLink: "/challenges/Double%20Vision.jpg"
     },
     {
         title: "Port Voyager",
@@ -63,7 +63,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         points: 150,
         difficulty: "Easy",
         hash: "1266bb94982de67c40fd5b85cb0a99bd1c46d6bd42144e1c1e7c7309cbd21795",
-        downloadLink: "/challenges/OSINT to Unlock.zip"
+        downloadLink: "/challenges/OSINT%20to%20Unlock.zip"
     },
     {
         title: "Magic Bytes",
@@ -79,7 +79,7 @@ export const ROUND1_CHALLENGES: Challenge[] = [
         points: 300,
         difficulty: "Hard",
         hash: "9e5bbdeeba472c9847c974bd28ef01cdadd2eac4f406937a03eb26c5fe48aa3f",
-        downloadLink: "/challenges/Deep Excavation.dd.gz"
+        downloadLink: "/challenges/Deep%20Excavation.dd.gz"
     },
     {
         title: "The Gatekeeper's Oversight",

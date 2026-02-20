@@ -15,6 +15,7 @@ const allowedOrigins = [
     'http://localhost:8080',
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://gamesofthrones.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -33,7 +34,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const MONGODB_URI = 'mongodb+srv://admin:admin@cluster0.pj04tl3.mongodb.net/ctf-db?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://admin:admin@cluster0.pj04tl3.mongodb.net/ctf-db?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('MongoDB connected'))
